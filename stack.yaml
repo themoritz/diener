@@ -7,7 +7,7 @@ resolver: lts-5.1
 packages:
 - '.'
 - location:
-    git: git@github.com:rubenmoor/gerippe.git
+    git: https://github.com/rubenmoor/gerippe.git
     commit: 8cb1a681d99c2c4a532dfd395ca5c9f9ebc75c14
 
 # Packages to be pulled from upstream that are not in the resolver (e.g., acme-missiles-0.3)
