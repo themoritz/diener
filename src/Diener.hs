@@ -19,6 +19,7 @@ module Diener
   , throwError
   , catchError
 
+  , withLogger
   , LogEnv
   , LogLevel(..)
   , logDebug
@@ -44,7 +45,7 @@ import           Control.Monad.Trans.Either
 import           Control.Monad.Trans.Except
 import           Control.Monad.Writer
 
-import           Diener.Logger                (LogFunction)
+import           Diener.Logger                (LogFunction, withLogger)
 
 type LogEnv r = (LogFunction, r)
 
