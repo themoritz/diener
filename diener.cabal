@@ -32,6 +32,28 @@ library
       OverloadedStrings
       LambdaCase
 
+-- usage example
+executable server
+  hs-source-dirs:      app
+  other-modules:       Api
+                     , Controller
+                     , Model
+                     , Types
+  build-depends:       base
+                     , diener
+                     , either
+                     , gerippe
+                     , persistent
+                     , persistent-sqlite
+                     , persistent-template
+                     , lifted-base
+                     , servant-server
+                     , text
+                     , transformers
+                     , warp
+  default-language:    Haskell2010
+  main-is:             Main.hs
+
 source-repository head
   type:     git
   location: https://github.com/themoritz/diener.git
