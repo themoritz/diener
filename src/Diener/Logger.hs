@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Diener.Logger
   ( withLogger
   , LogFunction
