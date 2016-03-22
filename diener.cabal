@@ -17,6 +17,7 @@ library
   exposed-modules:     Diener
                      , Diener.Logger
   build-depends:       base >= 4.7 && < 5
+                     , ansi-terminal
                      , bytestring
                      , either
                      , fast-logger

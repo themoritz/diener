@@ -12,6 +12,9 @@ import           Control.Monad.Reader
 import qualified Data.ByteString.Char8  as Char8 (putStrLn)
 import           Data.Monoid            ((<>))
 import           Data.Time
+import           System.Console.ANSI    (Color (Red), ColorIntensity (Vivid),
+                                         ConsoleLayer (Foreground),
+                                         SGR (Reset, SetColor), setSGR)
 
 import           System.Log.FastLogger  (LoggerSet, defaultBufSize, fromLogStr,
                                          newFileLoggerSet, pushLogStr,
@@ -30,7 +33,10 @@ logMsg loggerSet maxLogLevel loc _ level msg =
   when (level >= maxLogLevel) $ do
     out <- getOutput
     pushLogStr loggerSet (out <> "\n")
-    when (level >= LevelWarn) $ Char8.putStrLn $ fromLogStr out
+    when (level >= LevelWarn) $ do
+      when (level == LevelError) $ setSGR [SetColor Foreground Vivid Red]
+      Char8.putStrLn $ fromLogStr out
+      when (level == LevelError) $ setSGR [Reset]
   where
     getOutput = do
       date <- getDate
