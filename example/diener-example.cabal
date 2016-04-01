@@ -1,6 +1,6 @@
-name:                diener
+name:                diener-example
 version:             0.1.0.0
-synopsis:            Initial project template from stack
+synopsis:            Example usage for diener monad
 description:         Please see README.md
 homepage:            http://github.com/rubenmoor/ariel#readme
 license:             BSD3
@@ -12,22 +12,26 @@ category:            development
 build-type:          Simple
 cabal-version:       >=1.10
 
-library
+executable server
   hs-source-dirs:      src
-  exposed-modules:     Diener
-                     , Diener.Logger
-  build-depends:       base >= 4.7 && < 5
-                     , ansi-terminal
-                     , bytestring
+  other-modules:       Api
+                     , Controller
+                     , Model
+                     , Types
+  build-depends:       base
+                     , diener
                      , either
-                     , fast-logger
-                     , mtl
-                     , monad-control
-                     , monad-logger
-                     , time
-                     , transformers-base
+                     , gerippe
+                     , persistent
+                     , persistent-sqlite
+                     , persistent-template
+                     , lifted-base
+                     , servant-server
+                     , text
                      , transformers
+                     , warp
   default-language:    Haskell2010
+  main-is:             Main.hs
 
 source-repository head
   type:     git
