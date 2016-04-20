@@ -19,6 +19,7 @@ library
   build-depends:       base >= 4.7 && < 5
                      , ansi-terminal
                      , bytestring
+                     , data-default
                      , either
                      , fast-logger
                      , mtl
