@@ -4,6 +4,7 @@ module Diener.Logger
   ( withLogger
   , LogFunction
   , Settings (..)
+  , MonadLogger
   ) where
 
 import           Control.Exception.Base (bracket)
