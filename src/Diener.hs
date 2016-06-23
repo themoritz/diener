@@ -27,6 +27,7 @@ module Diener
   , logWarn
   , logError
   , MonadLogger
+  , monadLoggerLog
   , MonadError
   ) where
 
@@ -43,9 +44,9 @@ import           Control.Monad.State
 import           Control.Monad.Trans.Control
 import           Control.Monad.Trans.Either
 import           Control.Monad.Trans.Except
-import           Control.Monad.Writer
+import           Control.Monad.Writer        (MonadTrans, WriterT, lift)
 
-import           Diener.Logger                (LogFunction, withLogger)
+import           Diener.Logger               (LogFunction, withLogger)
 
 type LogEnv r = (LogFunction, r)
 
