@@ -44,7 +44,7 @@ import           Control.Monad.State
 import           Control.Monad.Trans.Control
 import           Control.Monad.Trans.Either
 import           Control.Monad.Trans.Except
-import           Control.Monad.Writer        (MonadTrans, WriterT, lift)
+import           Control.Monad.Writer        (WriterT)
 
 import           Diener.Logger               (LogFunction, withLogger)
 
@@ -107,6 +107,9 @@ instance (MonadDiener e r m) => MonadDiener e r (StateT s m) where
   diener = lift . diener
 
 instance (MonadDiener e r m) => MonadDiener e r (EitherT e' m) where
+  diener = lift . diener
+
+instance (MonadDiener e r m) => MonadDiener e r (ExceptT e' m) where
   diener = lift . diener
 
 instance (Monoid w, MonadDiener e r m) => MonadDiener e r (RWST r' w s m) where
