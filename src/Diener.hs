@@ -86,8 +86,7 @@ instance MonadTransControl (DienerT e r) where
                                                 f (run' . run . unDienerT)
   restoreT = DienerT . restoreT . restoreT
 
-runDienerT :: Monad m
-           => LogEnv r
+runDienerT :: LogEnv r
            -> DienerT e r m a
            -> m (Either e a)
 runDienerT env (DienerT m)
