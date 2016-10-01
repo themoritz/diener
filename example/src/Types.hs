@@ -1,19 +1,15 @@
 module Types where
 
-import           Control.Exception (Exception)
-import           Database.Gerippe  (ConnectionPool)
-import           Diener            (MakeDiener, MakeDienerT)
+import           Database.Gerippe (ConnectionPool)
+import           Diener           (DienerT)
 
-type Diener = MakeDiener DienerErr DienerEnv
-type DienerT = MakeDienerT DienerErr DienerEnv
+type HandlerT = DienerT AppError HandlerEnv
 
-data DienerEnv = DienerEnv
+data HandlerEnv = HandlerEnv
   { db :: ConnectionPool
   }
 
-data DienerErr
+data AppError
   = ErrNotFound
   | ErrDatabaseQuery
   deriving (Show)
-
-instance Exception DienerErr

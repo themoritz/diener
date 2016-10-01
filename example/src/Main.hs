@@ -12,25 +12,30 @@ import qualified Network.Wai.Handler.Warp as Warp
 import           Servant
 
 import qualified Api
-import           Diener                   (LogEnv, LogLevel (..), runDienerT,
-                                           withLogger)
+import           Diener                   (LogEnv (..), LogLevel (..),
+                                           runDienerT, withLogger)
+import qualified Diener.Logger            as Logger
 
-import           Types                    (Diener, DienerEnv (..), DienerErr)
+import           Types                    (AppError, HandlerEnv (..), HandlerT)
 
 main :: IO ()
-main = runInDienerEnv $ \env -> do
+main = runInHandlerEnv $ \env -> do
   let port = 3000 :: Int
   putStrLn $ "Listening on port " ++ show port ++ " ..."
   Warp.run port $ serve Api.api $ Api.server env
 
-runInDienerEnv :: (LogEnv DienerEnv -> IO a) -> IO a
-runInDienerEnv action =
-  withLogger "server.log" LevelDebug $ \logFn ->
+runInHandlerEnv :: (LogEnv HandlerEnv -> IO a) -> IO a
+runInHandlerEnv action = do
+  let logSettings = Logger.Settings
+        { Logger.filePath = "server.log"
+        , Logger.logLevel = LevelDebug
+        , Logger.noConsoleLogging = False
+        }
+  withLogger logSettings $ \logFn ->
     Sqlite.withSqlitePool "sqlite3.db" 1 $ \pool -> do
       Sqlite.runSqlPool (Sqlite.runMigration Model.migrateAll) pool
-      let env = (logFn, DienerEnv pool)
+      let env = LogEnv logFn $ HandlerEnv pool
       liftIO $ action env
 
-testDienerAction :: Diener a -> IO (Either DienerErr a)
-testDienerAction action = runInDienerEnv $ \env -> runDienerT env action
-
+testHandlerAction :: HandlerT IO a -> IO (Either AppError a)
+testHandlerAction action = runInHandlerEnv $ \env -> runDienerT env action

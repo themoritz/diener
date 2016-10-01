@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts           #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE InstanceSigs               #-}
 {-# LANGUAGE LambdaCase                 #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE RankNTypes                 #-}
@@ -9,8 +10,7 @@
 {-# LANGUAGE UndecidableInstances       #-}
 
 module Diener
-  ( MakeDienerT (..)
-  , MakeDiener
+  ( DienerT (..)
   , MonadDiener(..)
   , runDienerT
 
@@ -20,7 +20,7 @@ module Diener
   , catchError
 
   , withLogger
-  , LogEnv
+  , LogEnv (LogEnv)
   , LogLevel(..)
   , logDebug
   , logInfo
@@ -39,6 +39,7 @@ import           Control.Monad.Logger        (LogLevel (..), MonadLogger (..),
                                               logWarn, toLogStr)
 import           Control.Monad.Reader        (MonadReader, ReaderT, ask,
                                               runReaderT)
+import qualified Control.Monad.Reader        as Reader (asks)
 import           Control.Monad.RWS           (RWST)
 import           Control.Monad.State
 import           Control.Monad.Trans.Control
@@ -48,9 +49,12 @@ import           Control.Monad.Writer        (WriterT)
 
 import           Diener.Logger               (LogFunction, withLogger)
 
-type LogEnv r = (LogFunction, r)
+data LogEnv r = LogEnv
+  { logFunction :: LogFunction
+  , logEnv      :: r
+  }
 
-newtype MakeDienerT e r m a
+newtype DienerT e r m a
   = DienerT { unDienerT :: ExceptT e (ReaderT (LogEnv r) m) a }
     deriving ( Functor
              , Applicative
@@ -60,60 +64,58 @@ newtype MakeDienerT e r m a
              , MonadReader (LogEnv r)
              )
 
-instance MonadIO m => MonadLogger (MakeDienerT e r m) where
+instance MonadIO m => MonadLogger (DienerT e r m) where
   monadLoggerLog loc src lvl msg = do
-    (f, _) <- ask
+    f <- Reader.asks logFunction
     liftIO $ f loc src lvl $ toLogStr msg
 
-deriving instance (MonadBase b m) => MonadBase b (MakeDienerT e r m)
+deriving instance (MonadBase b m) => MonadBase b (DienerT e r m)
 
-instance MonadTrans (MakeDienerT e r) where
+instance MonadTrans (DienerT e r) where
   lift = DienerT . lift . lift
 
-instance MonadBaseControl b m => MonadBaseControl b (MakeDienerT e r m) where
-  type StM (MakeDienerT e r m) a = ComposeSt (MakeDienerT e r) m a
+instance MonadBaseControl b m => MonadBaseControl b (DienerT e r m) where
+  type StM (DienerT e r m) a = ComposeSt (DienerT e r) m a
   liftBaseWith     = defaultLiftBaseWith
   restoreM         = defaultRestoreM
 
-instance MonadTransControl (MakeDienerT e r) where
-  type StT (MakeDienerT e r) a = StT (ExceptT e) (StT (ReaderT r) a)
+instance MonadTransControl (DienerT e r) where
+  type StT (DienerT e r) a = StT (ExceptT e) (StT (ReaderT r) a)
   liftWith f = DienerT $ liftWith $ \run ->
                                     liftWith $ \run' ->
                                                 f (run' . run . unDienerT)
   restoreT = DienerT . restoreT . restoreT
 
 runDienerT :: Monad m
-          => LogEnv r
-          -> MakeDienerT e r m a
-          -> m (Either e a)
+           => LogEnv r
+           -> DienerT e r m a
+           -> m (Either e a)
 runDienerT env (DienerT m)
   = runReaderT (runExceptT m) env
 
-type MakeDiener e r = MakeDienerT e r IO
+class (Monad m, Monad io) => MonadDiener e r m io where
+  diener :: DienerT e r io a -> m a
 
-class Monad m => MonadDiener e r m where
-  diener :: MakeDiener e r a -> m a
-
-instance MonadDiener e r (MakeDiener e r) where
+instance Monad io => MonadDiener e r (DienerT e r io) io where
   diener = id
 
-instance (MonadDiener e r m) => MonadDiener e r (ReaderT r m) where
+instance (MonadDiener e r m io) => MonadDiener e r (ReaderT r m) io where
   diener = lift . diener
 
-instance (MonadDiener e r m, Monoid w) => MonadDiener e r (WriterT w m) where
+instance (MonadDiener e r m io, Monoid w) => MonadDiener e r (WriterT w m) io where
   diener = lift . diener
 
-instance (MonadDiener e r m) => MonadDiener e r (StateT s m) where
+instance (MonadDiener e r m io) => MonadDiener e r (StateT s m) io where
   diener = lift . diener
 
-instance (MonadDiener e r m) => MonadDiener e r (EitherT e' m) where
+instance (MonadDiener e r m io) => MonadDiener e r (EitherT e' m) io where
   diener = lift . diener
 
-instance (MonadDiener e r m) => MonadDiener e r (ExceptT e' m) where
+instance (MonadDiener e r m io) => MonadDiener e r (ExceptT e' m) io where
   diener = lift . diener
 
-instance (Monoid w, MonadDiener e r m) => MonadDiener e r (RWST r' w s m) where
+instance (Monoid w, MonadDiener e r m io) => MonadDiener e r (RWST r' w s m) io where
   diener = lift . diener
 
-asks :: (r -> a) -> MakeDiener e r a
-asks f = f . snd <$> ask
+asks :: Monad m => (r -> a) -> DienerT e r m a
+asks f = f <$> Reader.asks logEnv

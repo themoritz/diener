@@ -20,41 +20,42 @@ import           Database.Gerippe         (ConnectionPool, SqlPersistT,
 import           Diener                   (MonadError, MonadLogger, asks,
                                            logError, logInfo, throwError)
 
-import           Model                    (BlogPost (..), BlogPostId, Person (..))
-import           Types                    (Diener, DienerEnv (db),
-                                           DienerErr (..))
+import           Model                    (BlogPost (..), BlogPostId,
+                                           Person (..))
+import           Types                    (AppError (..), HandlerEnv (db),
+                                           HandlerT)
 
-runDb :: (MonadLogger Diener, MonadError e Diener)
-      => ConnectionPool -> e -> SqlPersistT Diener a -> Diener a
+runDb :: (MonadLogger (HandlerT IO), MonadError e (HandlerT IO))
+      => ConnectionPool -> e -> SqlPersistT (HandlerT IO) a -> HandlerT IO a
 runDb pool err q =
   catch (runSqlPool q pool) $ \(SomeException e) -> do
     $logError "runSqlPool failed."
     $logError $ "Error: " <> (Text.pack . show) e
     throwError err
 
-runQuery :: SqlPersistT Diener a -> Diener a
+runQuery :: SqlPersistT (HandlerT IO) a -> HandlerT IO a
 runQuery query = do
   pool <- asks db
   runDb pool ErrDatabaseQuery query
 
-blogposts :: Diener [BlogPost]
+blogposts :: HandlerT IO [BlogPost]
 blogposts = do
   $logInfo "Request: view all blogposts"
   entities <- runQuery getAll
   pure $ map entityVal entities
 
-blogpostAdd :: BlogPost -> Diener BlogPost
-blogpostAdd blogpost = do
-  runQuery $ insert blogpost
-  pure blogpost
+blogpostAdd :: BlogPost -> HandlerT IO BlogPost
+blogpostAdd blogpost =
+  blogpost <$ runQuery (insert blogpost)
 
-blogpostView :: BlogPostId -> Diener BlogPost
+blogpostView :: BlogPostId -> HandlerT IO BlogPost
 blogpostView blogpostId = do
   $logInfo $ "Request view blogpost by id: " <> (Text.pack . show . fromSqlKey) blogpostId
-  runQuery (get blogpostId)
-    >>= maybe (throwError ErrNotFound) pure
+  runQuery (get blogpostId) >>= maybe
+    (throwError ErrNotFound)
+    pure
 
-personAddJohn :: Diener Person
+personAddJohn :: HandlerT IO Person
 personAddJohn = do
   $logInfo "Adding John"
   let john = Person "John" (Just 42)
