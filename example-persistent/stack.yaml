@@ -1,7 +1,8 @@
 resolver: lts-5.1
+
 packages:
 - '.'
+- '..'
 - location:
     git: https://github.com/rubenmoor/gerippe.git
     commit: 8cb1a681d99c2c4a532dfd395ca5c9f9ebc75c14
-

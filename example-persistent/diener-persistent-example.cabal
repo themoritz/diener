@@ -1,13 +1,13 @@
-name:                diener-example
+name:                diener-persistent-example
 version:             0.1.0.0
 synopsis:            Example usage for diener monad
 description:         Please see README.md
-homepage:            http://github.com/rubenmoor/ariel#readme
+homepage:            http://github.com/themoritz/diener#readme
 license:             BSD3
 license-file:        LICENSE
-author:              Moritz Drexl
-maintainer:          mdrexl@fastmail.fm
-copyright:           (c) 2016 Moritz Drexl
+author:              Ruben Moor
+maintainer:          ruben.moor@gmail.com
+copyright:           (c) 2016 Ruben Moor
 category:            development
 build-type:          Simple
 cabal-version:       >=1.10
