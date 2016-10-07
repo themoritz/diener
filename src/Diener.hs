@@ -31,9 +31,10 @@ module Diener
   , MonadError
   ) where
 
-import           Control.Monad.Base
+import           Control.Monad.Base          (MonadBase)
 import           Control.Monad.Except        (MonadError, catchError,
                                               throwError)
+import           Control.Monad.IO.Class      (MonadIO (..))
 import           Control.Monad.Logger        (LogLevel (..), MonadLogger (..),
                                               logDebug, logError, logInfo,
                                               logWarn, toLogStr)
@@ -41,10 +42,14 @@ import           Control.Monad.Reader        (MonadReader, ReaderT, ask,
                                               runReaderT)
 import qualified Control.Monad.Reader        as Reader (asks)
 import           Control.Monad.RWS           (RWST)
-import           Control.Monad.State
-import           Control.Monad.Trans.Control
-import           Control.Monad.Trans.Either
-import           Control.Monad.Trans.Except
+import           Control.Monad.State         (StateT)
+import           Control.Monad.Trans.Class   (MonadTrans (..))
+import           Control.Monad.Trans.Control (ComposeSt, MonadBaseControl (..),
+                                              MonadTransControl (..),
+                                              defaultLiftBaseWith,
+                                              defaultRestoreM)
+import           Control.Monad.Trans.Either  (EitherT)
+import           Control.Monad.Trans.Except  (ExceptT, runExceptT)
 import           Control.Monad.Writer        (WriterT)
 
 import           Diener.Logger               (LogFunction, withLogger)

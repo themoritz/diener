@@ -11,8 +11,8 @@ module Diener.Logger
 import           Control.Exception.Base (bracket)
 import           Control.Monad.Logger
 import           Control.Monad.Reader
-import Data.Default (Default, def)
 import qualified Data.ByteString.Char8  as Char8 (putStrLn)
+import           Data.Default           (Default, def)
 import           Data.Monoid            ((<>))
 import           Data.Time
 import           System.Console.ANSI    (Color (Red), ColorIntensity (Vivid),
@@ -26,8 +26,8 @@ import           System.Log.FastLogger  (LoggerSet, defaultBufSize, fromLogStr,
 type LogFunction = Loc -> LogSource -> LogLevel -> LogStr -> IO ()
 
 data Settings = Settings
-    { filePath :: FilePath
-    , logLevel :: LogLevel
+    { filePath         :: FilePath
+    , logLevel         :: LogLevel
     , noConsoleLogging :: Bool
     }
 

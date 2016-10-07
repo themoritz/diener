@@ -2,7 +2,7 @@ name:                diener
 version:             0.1.0.0
 synopsis:            Initial project template from stack
 description:         Please see README.md
-homepage:            http://github.com/rubenmoor/ariel#readme
+homepage:            http://github.com/themoritz/diener#readme
 license:             BSD3
 license-file:        LICENSE
 author:              Moritz Drexl
@@ -29,6 +29,7 @@ library
                      , transformers-base
                      , transformers
   default-language:    Haskell2010
+  ghc-options:       -Wall
 
 source-repository head
   type:     git
