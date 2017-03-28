@@ -20,7 +20,7 @@ module Diener
   , catchError
 
   , withLogger
-  , LogEnv (LogEnv)
+  , LogEnv (LogEnv, logEnv)
   , LogLevel(..)
   , logDebug
   , logInfo
